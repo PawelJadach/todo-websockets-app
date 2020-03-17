@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import io from 'socket.io-client';
+import { v4 as uuidv4 } from 'uuid';
+import Task from './Task';
 
 class App extends Component {
 
@@ -13,6 +15,7 @@ class App extends Component {
     this.socket.on('updateData', (tasks) => this.updateData(tasks));
     this.socket.on('addTask', (task) => this.addTask(task));
     this.socket.on('removeTask', (id) => this.removeTask(id, 'serwer'));
+    this.socket.on('editTask', (newName, id) => this.editTask(newName, id, 'serwer'));
   };
 
   updateData(tasks){
@@ -21,27 +24,46 @@ class App extends Component {
     }))
   }
 
-  removeTask(id, status ='client'){
+  removeTask = (id, status = 'client') => {
     this.setState((prevState) => ({
-      tasks: prevState.tasks.filter((task, index) => index !== id),
+      tasks: prevState.tasks.filter((task) => id !== task.id),
     }));
     if (status === 'client') this.socket.emit('removeTask', id);
   };
 
   submitForm = (e) => {
     e.preventDefault();
-    const task = this.state.taskName;
-    this.addTask(task);
-    this.setState((prevState) => ({
-      taskName: '',
-    }));
-    this.socket.emit('addTask', task);
+    if(this.state.taskName !== ''){
+      const newTask = {
+        id: uuidv4(),
+        name: this.state.taskName,
+      }
+      this.addTask(newTask);
+      this.setState((prevState) => ({
+        taskName: '',
+      }));
+      this.socket.emit('addTask', newTask);
+    } else alert('Wpisz coś!')
   }
 
   addTask = (task) => {
     this.setState((prevState) => ({
       tasks: prevState.tasks.concat(task),
     }));
+  }
+
+  editTask = (newName, id, status = 'client') => {
+    if(newName !== ''){
+      this.setState((prevState) => ({
+        tasks: prevState.tasks.map(task => {
+          if(task.id === id){
+            task.name = newName;
+            return task;
+          } else return task;
+        }),
+      }));
+      if(status === 'client')this.socket.emit('editTask', newName, id);
+    } else alert('Wpisz coś!')
   }
 
   onChange = (e) => {
@@ -61,7 +83,7 @@ class App extends Component {
           <h2>Tasks</h2>
   
           <ul className="tasks-section__list" id="tasks-list">
-            {this.state.tasks.map((task, index) => <li key={index} className="task">{task}<button onClick={() => this.removeTask(index)} className="btn btn--red">Remove</button></li>)}
+            {this.state.tasks.map((task) => <Task key={task.id} editTask={this.editTask} task={task} removeTask={this.removeTask}/>)}
           </ul>
   
           <form id="add-task-form" onSubmit={this.submitForm}>

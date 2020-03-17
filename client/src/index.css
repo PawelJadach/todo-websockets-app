@@ -39,6 +39,10 @@ p {
   background: #e74c3c;
 }
 
+.btn--green {
+  background: green;
+}
+
 .text-input {
   background: none;
   border: none;
@@ -68,6 +72,22 @@ p {
 }
 
 .task {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed rgb(83, 83, 83);
+}
+
+.edit {
+  border: none;
+  width: 100%;
+  padding: 20px 0;
+  color: white;
+  font-size: 16px;
+}
+
+#edit-task-form {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;

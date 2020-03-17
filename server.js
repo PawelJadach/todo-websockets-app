@@ -21,9 +21,14 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('addTask', task);
   });
 
-  socket.on('removeTask', (index) => {
-    tasks.splice(index, 1);
-    socket.broadcast.emit('removeTask', index);
+  socket.on('removeTask', (id) => {
+    tasks.splice(tasks.findIndex(task => task.id === id), 1);
+    socket.broadcast.emit('removeTask', id);
+  });
+
+  socket.on('editTask', (newName, id) => {
+    tasks[tasks.findIndex(task => task.id === id)].name = newName;
+    socket.broadcast.emit('editTask', newName, id);
   });
 
   // socket.on('disconnect', () => {
